@@ -12,10 +12,12 @@
         <tr>
             <th>ID</th>
             <th>Name</th>
+             <th>Finger</th>
         </tr>
         <tr th:each="user : ${users}">
             <td th:text="${user.id}"></td>
             <td th:text="${user.name}"></td>
+            <td th:text="${user.fingerprint}"></td>
         </tr>
     </table>
 

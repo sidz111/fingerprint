@@ -1,25 +1,27 @@
 package com.example.fingerprintapp.controller;
 
-import com.example.fingerprintapp.entity.User;
-import com.example.fingerprintapp.service.UserService;
+import java.util.Base64;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.util.Base64;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.fingerprintapp.entity.User;
+import com.example.fingerprintapp.service.UserServiceImpl;
 
 @Controller
 public class UserController {
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("users", userServiceImpl.getAllUsers());
         return "index";
     }
 
@@ -34,7 +36,7 @@ public class UserController {
                                @RequestParam("fingerprint") String fingerprintBase64) {
         byte[] fingerprintData = Base64.getDecoder().decode(fingerprintBase64);
         User user = new User(name, fingerprintData);
-        userService.saveUser(user);
+        userServiceImpl.addUser(user);
         return "redirect:/";
     }
 

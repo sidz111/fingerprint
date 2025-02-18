@@ -1,23 +1,21 @@
 package com.example.fingerprintapp.service;
 
-import com.example.fingerprintapp.entity.User;
-import com.example.fingerprintapp.repository.UserRepository;
-import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
-public class UserService {
-    private final UserRepository userRepository;
+import com.example.fingerprintapp.entity.User;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+public interface UserService {
+	
+	User addUser(User user);
+	
+	User getUserById(Long id);
+	
+	List<User> getAllUsers();
+	
+	void deleteUserById(Long id);
+	
+	User getUserByFingerprint(byte[] fingerprint);
+	
+	
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public void saveUser(User user) {
-        userRepository.save(user);
-    }
 }
