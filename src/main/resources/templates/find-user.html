@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find User by Fingerprint</title>
+    <script>
+        async function captureFingerprint() {
+            try {
+                const publicKey = {
+                    challenge: new Uint8Array(32),
+                    rp: { name: "Fingerprint Auth" },
+                    user: {
+                        id: new Uint8Array(16),
+                        name: "test_user",
+                        displayName: "Test User"
+                    },
+                    pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                    authenticatorSelection: { authenticatorAttachment: "platform" },
+                    timeout: 60000,
+                    attestation: "none"
+                };
+
+                const credential = await navigator.credentials.create({ publicKey });
+
+                const fingerprintArray = new Uint8Array(credential.response.attestationObject);
+                const fingerprintBase64 = btoa(String.fromCharCode.apply(null, fingerprintArray));
+
+                document.getElementById("fingerprintData").value = fingerprintBase64;
+                alert("Fingerprint captured successfully!");
+            } catch (error) {
+                console.error("Error capturing fingerprint:", error);
+                alert("Fingerprint capture failed!");
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h2>Find User by Fingerprint</h2>
+    
+    <form action="/find" method="post">
+        <button type="button" onclick="captureFingerprint()">Scan Fingerprint</button><br>
+        <input type="hidden" id="fingerprintData" name="fingerprint">
+        <button type="submit">Find User</button>
+    </form>
+
+    <div th:if="${user}">
+        <h3>User Found:</h3>
+        <p><strong>Name:</strong> <span th:text="${user.name}"></span></p>
+        <p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
+    </div>
+
+    <div th:if="${error}">
+        <p style="color: red;" th:text="${error}"></p>
+    </div>
+
+</body>
+</html>

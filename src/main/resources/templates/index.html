@@ -1,27 +1,75 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User List</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find User by Fingerprint</title>
+<script>
+        async function captureFingerprint() {
+            try {
+                if (!window.PublicKeyCredential) {
+                    alert("WebAuthn not supported on this browser.");
+                    return;
+                }
+
+                const publicKey = {
+                    challenge: new Uint8Array(32),
+                    rp: { name: "Fingerprint Auth" },
+                    user: {
+                        id: new Uint8Array(16),
+                        name: "test_user",
+                        displayName: "Test User"
+                    },
+                    pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                    authenticatorSelection: { authenticatorAttachment: "platform" },
+                    timeout: 60000,
+                    attestation: "direct"
+                };
+
+                const credential = await navigator.credentials.create({ publicKey });
+
+                if (credential) {
+                    const fingerprintData = new Uint8Array(credential.response.attestationObject);
+                    console.log("Fingerprint Captured:", fingerprintData);
+                    const fingerprintBase64 = btoa(String.fromCharCode(...fingerprintData));
+
+                    document.getElementById("fingerprintData").value = fingerprintBase64;
+                    alert("Fingerprint captured successfully!");
+                } else {
+                    alert("No fingerprint captured.");
+                }
+            } catch (error) {
+                console.error("Error capturing fingerprint:", error);
+                alert("Fingerprint capture failed! Check console for details.");
+            }
+        }
+    </script>
 </head>
 <body>
 
-    <h2>Registered Users</h2>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Finger</th>
-        </tr>
-        <tr th:each="user : ${users}">
-            <td th:text="${user.id}"></td>
-            <td th:text="${user.name}"></td>
-            <td th:text="${user.fingerprint}"></td>
-        </tr>
-    </table>
+	<h2>Find User by Fingerprint</h2>
 
-    <a href="/register">Register New User</a>
+	<form action="/find" method="post">
+		<button type="button" onclick="captureFingerprint()">Scan
+			Fingerprint</button>
+		<br> <input type="hidden" id="fingerprintData" name="fingerprint">
+		<button type="submit">Find User</button>
+	</form>
 
+	<div th:if="${user}">
+		<h3>User Found:</h3>
+		<p>
+			<strong>Name:</strong> <span th:text="${user.name}"></span>
+		</p>
+		<p>
+			<strong>ID:</strong> <span th:text="${user.id}"></span>
+		</p>
+	</div>
+
+	<div th:if="${error}">
+		<p style="color: red;" th:text="${error}"></p>
+	</div>
+
+	<a href="/register">Add User</a>
 </body>
 </html>
